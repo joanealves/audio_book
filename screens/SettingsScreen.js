@@ -1,18 +1,54 @@
-import React, { useContext } from 'react';
-import { View, Text, Switch, StyleSheet } from 'react-native';
-import { ThemeContext } from '../ThemeContext';
+import React, { useContext, useState } from 'react';
+import { View, Text, Switch, StyleSheet, Picker } from 'react-native';
+import { ThemeContext } from '../ThemeContext'; // Importando o ThemeContext
 
 const SettingsScreen = () => {
-    const { isDarkTheme, toggleTheme } = useContext(ThemeContext);
+    const { isDarkTheme, toggleTheme, fontSize, changeFontSize, language, changeLanguage } = useContext(ThemeContext);
+    const [selectedFontSize, setSelectedFontSize] = useState(fontSize);
+    const [selectedLanguage, setSelectedLanguage] = useState(language);
 
     return (
         <View style={[styles.container, isDarkTheme ? styles.darkContainer : styles.lightContainer]}>
-            <Text style={styles.header}>Configurações</Text>
+            <Text style={[styles.header, isDarkTheme ? styles.darkText : styles.lightText]}>Configurações</Text>
+
+            {/* Alternar Tema */}
             <View style={styles.option}>
                 <Text style={styles.optionText}>Tema Escuro</Text>
                 <Switch value={isDarkTheme} onValueChange={toggleTheme} />
             </View>
-            {/* Adicione mais opções de configuração conforme necessário */}
+
+            {/* Alterar Tamanho da Fonte */}
+            <View style={styles.option}>
+                <Text style={styles.optionText}>Tamanho da Fonte</Text>
+                <Picker
+                    selectedValue={selectedFontSize}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => {
+                        setSelectedFontSize(itemValue);
+                        changeFontSize(itemValue);
+                    }}
+                >
+                    <Picker.Item label="Pequena" value="small" />
+                    <Picker.Item label="Média" value="medium" />
+                    <Picker.Item label="Grande" value="large" />
+                </Picker>
+            </View>
+
+            {/* Alterar Idioma */}
+            <View style={styles.option}>
+                <Text style={styles.optionText}>Idioma</Text>
+                <Picker
+                    selectedValue={selectedLanguage}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => {
+                        setSelectedLanguage(itemValue);
+                        changeLanguage(itemValue);
+                    }}
+                >
+                    <Picker.Item label="Português" value="pt" />
+                    <Picker.Item label="Inglês" value="en" />
+                </Picker>
+            </View>
         </View>
     );
 };
@@ -41,6 +77,16 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontSize: 18,
+    },
+    picker: {
+        height: 50,
+        width: 150,
+    },
+    darkText: {
+        color: '#fff',
+    },
+    lightText: {
+        color: '#000',
     },
 });
 

@@ -3,31 +3,32 @@ import { View, TextInput, Text, StyleSheet, TouchableOpacity, ImageBackground, D
 
 const { width, height } = Dimensions.get('window');
 
-export default function SignupScreen({ navigation }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+export default function ResetPasswordScreen({ navigation }) {
+  const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const validateFields = () => {
-    if (!username || !password || !confirmPassword) {
-      setErrorMessage('Preencha todos os campos');
+  const validateEmail = () => {
+    if (!email) {
+      setErrorMessage('O campo de e-mail é obrigatório');
       return false;
     }
-    if (password !== confirmPassword) {
-      setErrorMessage('As senhas não coincidem');
-      return false;
-    }
-    if (password.length < 6) {
-      setErrorMessage('A senha deve ter pelo menos 6 caracteres');
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      setErrorMessage('Insira um e-mail válido');
       return false;
     }
     return true;
   };
 
-  const handleSignup = () => {
-    if (!validateFields()) return;
-    navigation.navigate('Login'); // Após o cadastro, redireciona para a tela de login
+  const handleResetPassword = () => {
+    if (!validateEmail()) return;
+    setSuccessMessage('Link de redefinição de senha enviado para o e-mail.');
+    setErrorMessage('');  // Limpa a mensagem de erro após sucesso
+  };
+
+  const handleBackToLogin = () => {
+    navigation.navigate('Login');
   };
 
   return (
@@ -38,39 +39,26 @@ export default function SignupScreen({ navigation }) {
       >
         <View style={styles.overlay}>
           <View style={styles.container}>
-            <Text style={styles.brandTitle}>Schema</Text>
+            <Text style={styles.title}>Recuperar Senha</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Usuário"
+              placeholder="E-mail"
               placeholderTextColor="#888"
-              value={username}
-              onChangeText={setUsername}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Senha"
-              placeholderTextColor="#888"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Confirmar Senha"
-              placeholderTextColor="#888"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              value={email}
+              onChangeText={setEmail}
             />
 
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+            {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
-            <TouchableOpacity style={styles.buttonBlue} onPress={handleSignup}>
-              <Text style={styles.buttonText}>Cadastrar-se</Text>
+            {/* Botão de Redefinir Senha */}
+            <TouchableOpacity style={styles.buttonBlue} onPress={handleResetPassword}>
+              <Text style={styles.buttonText}>Enviar Link</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.buttonOutline} onPress={() => navigation.navigate('Login')}>
+            {/* Botão de Voltar para o Login */}
+            <TouchableOpacity style={styles.buttonOutline} onPress={handleBackToLogin}>
               <Text style={styles.buttonOutlineText}>Voltar ao Login</Text>
             </TouchableOpacity>
           </View>
@@ -102,19 +90,21 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400, 
     padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)', 
     borderRadius: 10,
     alignItems: 'center',
   },
-  brandTitle: {
-    fontSize: width * 0.08,
+  title: {
+    fontSize: width * 0.07,
     fontWeight: 'bold',
-    color: '#1E90FF',
+    color: '#ff4081',
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
     height: 50,
-    borderColor: '#1E90FF',
+    borderColor: '#ff4081',
     borderWidth: 2,
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -152,5 +142,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     marginBottom: 10,
+    textAlign: 'center',
+  },
+  successText: {
+    color: 'green',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });

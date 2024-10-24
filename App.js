@@ -1,22 +1,47 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native'; // Gerencia a navegação
-import { createStackNavigator } from '@react-navigation/stack'; // Cria as rotas em stack
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import AppNavigator from './components/navigation/AppNavigator'; // Navegador com as telas principais
 import LoginScreen from './screens/LoginScreen'; // Tela de login
 import SignupScreen from './screens/SignupScreen'; // Tela de cadastro
-import HomeScreen from './screens/HomeScreen'; // Tela de home
+import { ThemeProvider } from './ThemeContext'; // Provedor do tema
 
-// Criação do Stack Navigator
 const Stack = createStackNavigator();
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado de login
+
+  const handleLogin = () => {
+    setIsLoggedIn(true); // Simula o login do usuário
+  };
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        {/* Definindo as telas */}
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {!isLoggedIn ? (
+            <>
+              <Stack.Screen
+                name="Login"
+                options={{ headerShown: false }} // Escondendo o cabeçalho da tela de login
+              >
+                {(props) => <LoginScreen {...props} onLogin={handleLogin} />}
+              </Stack.Screen>
+              <Stack.Screen
+                name="Signup"
+                component={SignupScreen}
+                options={{ headerShown: false }}
+              />
+            </>
+          ) : (
+            <Stack.Screen
+              name="MainApp"
+              component={AppNavigator}
+              options={{ headerShown: false }} // Escondendo o cabeçalho do AppNavigator
+            />
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
-import { Ionicons } from '@expo/vector-icons'; // Ícone para interação
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FavoritesScreen({ navigation }) {
-  const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
-  const [favorites, setFavorites] = useState([]); // Lista de livros favoritos
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -31,21 +29,21 @@ export default function FavoritesScreen({ navigation }) {
       return b;
     });
 
-    setFavorites(updatedBooks.filter(book => book.favorite)); // Atualiza a lista de favoritos
+    setFavorites(updatedBooks.filter(book => book.favorite)); 
     const allBooks = await AsyncStorage.getItem('books');
     const books = allBooks ? JSON.parse(allBooks) : [];
     const updatedAllBooks = books.map(b => (b.id === book.id ? { ...b, favorite: !b.favorite } : b));
-    await AsyncStorage.setItem('books', JSON.stringify(updatedAllBooks)); // Salva a alteração
+    await AsyncStorage.setItem('books', JSON.stringify(updatedAllBooks)); 
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity 
-      style={[styles.bookItem, isDarkTheme ? styles.darkItem : styles.lightItem]}
+      style={styles.bookItem} 
       onPress={() => navigation.navigate('BookDetail', { book: item })}
     >
       <View style={styles.bookInfo}>
-        <Text style={[styles.title, isDarkTheme ? styles.darkText : styles.lightText]}>{item.title}</Text>
-        <Text style={[styles.author, isDarkTheme ? styles.darkText : styles.lightText]}>Autor: {item.author}</Text>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.author}>Autor: {item.author}</Text>
       </View>
       <TouchableOpacity onPress={() => toggleFavorite(item)}>
         <Ionicons 
@@ -58,17 +56,15 @@ export default function FavoritesScreen({ navigation }) {
   );
 
   return (
-    <View style={[styles.container, isDarkTheme ? styles.darkContainer : styles.lightContainer]}>
-      <Text style={[styles.header, isDarkTheme ? styles.darkText : styles.lightText]}>Favoritos</Text>
+    <View style={styles.container}>
+      <Text style={styles.header}>Favoritos</Text>
 
       <FlatList
         data={favorites}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         ListEmptyComponent={
-          <Text style={[styles.emptyText, isDarkTheme ? styles.darkText : styles.lightText]}>
-            Nenhum livro favorito.
-          </Text>
+          <Text style={styles.emptyText}>Nenhum livro favorito.</Text>
         }
       />
     </View>
@@ -79,12 +75,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-  },
-  darkContainer: {
-    backgroundColor: '#333',
-  },
-  lightContainer: {
-    backgroundColor: '#f5f5f5',
   },
   header: {
     fontSize: 24,
@@ -112,18 +102,6 @@ const styles = StyleSheet.create({
   author: {
     fontSize: 14,
     color: '#555',
-  },
-  lightText: {
-    color: '#000',
-  },
-  darkText: {
-    color: '#fff',
-  },
-  darkItem: {
-    backgroundColor: '#444',
-  },
-  lightItem: {
-    backgroundColor: '#fff',
   },
   emptyText: {
     textAlign: 'center',
