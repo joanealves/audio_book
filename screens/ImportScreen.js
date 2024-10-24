@@ -4,22 +4,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
 
 export default function ImportScreen() {
-    const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto
+    const { isDarkTheme } = useContext(ThemeContext);
     const [url, setUrl] = useState('');
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [description, setDescription] = useState('');
-    const [loading, setLoading] = useState(false); // Estado para controle de carregamento
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(''); // Para mostrar erros específicos
 
     const handleImport = async () => {
+        setErrorMessage('');
         if (!url || !title || !author) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+            setErrorMessage('Preencha todos os campos obrigatórios.');
             return;
         }
 
-        // Validação da URL (opcional)
         if (!isValidURL(url)) {
-            Alert.alert('Erro', 'Por favor, insira uma URL válida.');
+            setErrorMessage('Insira uma URL válida.');
             return;
         }
 
@@ -33,22 +34,27 @@ export default function ImportScreen() {
             rating: 0,
         };
 
-        setLoading(true); // Iniciar o carregamento
+        setLoading(true);
         try {
             const storedBooks = await AsyncStorage.getItem('books');
             const books = storedBooks ? JSON.parse(storedBooks) : [];
             books.push(newBook);
             await AsyncStorage.setItem('books', JSON.stringify(books));
             Alert.alert('Sucesso', 'Livro importado com sucesso!');
-            setUrl('');
-            setTitle('');
-            setAuthor('');
-            setDescription('');
+            clearFields(); // Limpar os campos
         } catch (error) {
             Alert.alert('Erro', 'Erro ao importar o livro.');
         } finally {
-            setLoading(false); // Finalizar o carregamento
+            setLoading(false);
         }
+    };
+
+    const clearFields = () => {
+        setUrl('');
+        setTitle('');
+        setAuthor('');
+        setDescription('');
+        setErrorMessage(''); // Limpar mensagem de erro
     };
 
     const isValidURL = (string) => {
@@ -59,15 +65,16 @@ export default function ImportScreen() {
     return (
         <View style={[styles.container, isDarkTheme ? styles.darkContainer : styles.lightContainer]}>
             <Text style={[styles.header, isDarkTheme ? styles.darkText : styles.lightText]}>Importar Livro</Text>
+            
             <TextInput
-                style={styles.input}
+                style={[styles.input, errorMessage && !title ? styles.errorInput : null]}
                 placeholder="Título"
                 value={title}
                 onChangeText={setTitle}
                 accessibilityLabel="Título do livro"
             />
             <TextInput
-                style={styles.input}
+                style={[styles.input, errorMessage && !author ? styles.errorInput : null]}
                 placeholder="Autor"
                 value={author}
                 onChangeText={setAuthor}
@@ -75,18 +82,21 @@ export default function ImportScreen() {
             />
             <TextInput
                 style={styles.input}
-                placeholder="Descrição"
+                placeholder="Descrição (opcional)"
                 value={description}
                 onChangeText={setDescription}
                 accessibilityLabel="Descrição do livro"
             />
             <TextInput
-                style={styles.input}
+                style={[styles.input, errorMessage && !url ? styles.errorInput : null]}
                 placeholder="URL do Audiolivro"
                 value={url}
                 onChangeText={setUrl}
                 accessibilityLabel="URL do audiolivro"
             />
+            
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+            
             {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
             ) : (
@@ -120,6 +130,14 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 10,
         marginBottom: 20,
+    },
+    errorInput: {
+        borderColor: 'red',
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 10,
+        textAlign: 'center',
     },
     lightText: {
         color: '#000',

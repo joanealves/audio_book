@@ -5,15 +5,24 @@ import { ThemeContext } from '../ThemeContext'; // Importando o contexto de tema
 const { width } = Dimensions.get('window');
 
 const audiobooks = [
-  { id: '1', title: 'Audiobook 1', author: 'Autor 1', cover: 'https://via.placeholder.com/150' },
-  { id: '2', title: 'Audiobook 2', author: 'Autor 2', cover: 'https://via.placeholder.com/150' },
+  { id: '1', title: 'Audiobook 1', author: 'Autor 1', cover: 'https://via.placeholder.com/150', audioFile: 'https://www.example.com/audio1.mp3' },
+  { id: '2', title: 'Audiobook 2', author: 'Autor 2', cover: 'https://via.placeholder.com/150', audioFile: 'https://www.example.com/audio2.mp3' },
+  { id: '3', title: 'Audiobook 3', author: 'Autor 3', cover: 'https://via.placeholder.com/150', audioFile: 'https://www.example.com/audio3.mp3' },
+  { id: '4', title: 'Audiobook 4', author: 'Autor 4', cover: 'https://via.placeholder.com/150', audioFile: 'https://www.example.com/audio4.mp3' },
+  { id: '5', title: 'Audiobook 5', author: 'Autor 5', cover: 'https://via.placeholder.com/150', audioFile: 'https://www.example.com/audio5.mp3' },
 ];
 
 export default function HomeScreen({ navigation }) {
   const { isDarkTheme, fontSize } = useContext(ThemeContext);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('AudioPlayer', { book: item })}>
+    <TouchableOpacity 
+      style={styles.card} 
+      onPress={() => navigation.navigate('AudioPlayer', { 
+        audioFile: item.audioFile, 
+        audioId: item.id 
+      })}
+    >
       <Image source={{ uri: item.cover }} style={styles.coverImage} />
       <Text style={[styles.title, fontSize === 'small' && styles.smallText, fontSize === 'large' && styles.largeText]}>
         {item.title}
@@ -37,9 +46,9 @@ export default function HomeScreen({ navigation }) {
           data={audiobooks}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          numColumns={2}  // Definindo duas colunas para melhor responsividade
-          columnWrapperStyle={styles.row}
-          scrollEnabled={false}
+          numColumns={2} 
+          columnWrapperStyle={styles.row} 
+          scrollEnabled={false} 
         />
 
         <TouchableOpacity style={styles.libraryButton} onPress={handleLibraryNavigation}>
@@ -78,26 +87,25 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    margin: 5, // Margem menor para cards mais compactos
+    margin: 10,
     backgroundColor: '#1e1e1e',
     borderRadius: 8,
     alignItems: 'center',
-    padding: 10, // Adicionando preenchimento
   },
   coverImage: {
-    width: width * 0.38, // Ajuste menor para responsividade
-    height: width * 0.38,
+    width: width * 0.4, // Ajuste para responsividade
+    height: width * 0.4,
     borderRadius: 8,
     marginBottom: 10,
   },
   title: {
-    fontSize: 14, // Tamanho de fonte ajustado para cards menores
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
   },
   author: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#aaa',
     marginBottom: 10,
     textAlign: 'center',

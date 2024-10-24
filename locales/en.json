@@ -1,0 +1,23 @@
+{
+    "settings": "Settings",
+    "dark_mode": "Dark Mode",
+    "font_size": "Font Size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "theme_color": "Theme Color",
+    "blue": "Blue",
+    "red": "Red",
+    "author": "Author",
+    "search": "Search",
+    "no_books_found": "No books found",
+    "language": "Language",
+    "notifications": "Notifications",
+    "reset_password": "Reset Password",
+    "library": "Library",
+    "favorites": "Favorites",
+    "show_all": "Show All",
+    "show_favorites": "Show Favorites",
+    "no_books_found_in_library": "No books found in the library."
+  }
+  

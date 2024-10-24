@@ -1,91 +1,117 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, Button, Alert, StyleSheet, ActivityIndicator, Text, Switch } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
 
-export default function FeedbackHistoryScreen() {
-    const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto
-    const [feedbackList, setFeedbackList] = useState([]);
-    const [loading, setLoading] = useState(true); // Estado para controle de carregamento
+const FeedbackScreen = () => {
+    const [rating, setRating] = useState('');
+    const [comment, setComment] = useState('');
+    const [loading, setLoading] = useState(false); // Estado para controlar carregamento
+    const [isAnonymous, setIsAnonymous] = useState(false); // Estado para feedback anônimo
 
-    useEffect(() => {
-        const loadFeedback = async () => {
-            try {
-                const storedFeedback = await AsyncStorage.getItem('feedback');
-                const feedback = storedFeedback ? JSON.parse(storedFeedback) : [];
-                setFeedbackList(feedback);
-            } catch (error) {
-                console.error('Erro ao carregar feedback:', error);
-            } finally {
-                setLoading(false); // Finalizar o carregamento
-            }
+    const handleSubmit = async () => {
+        // Validação da avaliação
+        if (isNaN(rating) || rating < 0 || rating > 5) {
+            Alert.alert('Erro', 'Por favor, insira uma avaliação válida entre 0 e 5.');
+            return;
+        }
+
+        if (!comment) {
+            Alert.alert('Erro', 'Por favor, insira um comentário.');
+            return;
+        }
+
+        setLoading(true);
+
+        const feedback = {
+            rating,
+            comment,
+            anonymous: isAnonymous,
+            date: new Date().toLocaleString(),
         };
 
-        loadFeedback();
-    }, []);
+        try {
+            const storedFeedback = await AsyncStorage.getItem('feedback');
+            const feedbackList = storedFeedback ? JSON.parse(storedFeedback) : [];
+            feedbackList.push(feedback);
+            await AsyncStorage.setItem('feedback', JSON.stringify(feedbackList));
 
-    const renderItem = ({ item }) => (
-        <View style={[styles.item, isDarkTheme ? styles.darkItem : styles.lightItem]}>
-            <Text style={[styles.feedbackText, isDarkTheme ? styles.darkText : styles.lightText]}>{item}</Text>
-        </View>
-    );
+            Alert.alert('Sucesso', 'Feedback enviado com sucesso!');
+            setRating('');
+            setComment('');
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao enviar o feedback.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <View style={[styles.container, isDarkTheme ? styles.darkContainer : styles.lightContainer]}>
-            <Text style={[styles.header, isDarkTheme ? styles.darkText : styles.lightText]}>Histórico de Feedback</Text>
-            {loading ? ( // Exibir indicador de carregamento
-                <ActivityIndicator size="large" color="#ff4081" />
+        <View style={styles.container}>
+            <Text style={styles.header}>Enviar Feedback</Text>
+
+            <TextInput
+                style={styles.input}
+                placeholder="Avaliação (0-5)"
+                keyboardType="numeric"
+                value={rating}
+                onChangeText={text => setRating(text)}
+                placeholderTextColor="#888"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Comentário"
+                value={comment}
+                onChangeText={setComment}
+                multiline
+                placeholderTextColor="#888"
+            />
+
+            <View style={styles.anonymousOption}>
+                <Text style={styles.label}>Enviar anonimamente</Text>
+                <Switch value={isAnonymous} onValueChange={setIsAnonymous} />
+            </View>
+
+            {loading ? (
+                <ActivityIndicator size="large" color="#1E90FF" />
             ) : (
-                <FlatList
-                    data={feedbackList}
-                    renderItem={renderItem}
-                    keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={feedbackList.length === 0 ? styles.emptyList : null}
-                    ListEmptyComponent={<Text style={[styles.emptyText, isDarkTheme ? styles.darkText : styles.lightText]}>Nenhum feedback enviado ainda.</Text>}
-                />
+                <Button title="Enviar Feedback" onPress={handleSubmit} />
             )}
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#121212',
-    },
-    darkContainer: {
-        backgroundColor: '#1e1e1e',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
     },
     header: {
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
-        color: '#ff4081',
     },
-    item: {
-        padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
+    input: {
+        height: 40,
+        borderColor: '#ccc',
+        borderWidth: 1,
         borderRadius: 5,
-        marginBottom: 10,
-        backgroundColor: '#1e1e1e',
+        paddingHorizontal: 10,
+        marginBottom: 20,
+        color: '#000',
     },
-    feedbackText: {
+    anonymousOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    label: {
         fontSize: 16,
-        color: '#fff',
-    },
-    emptyText: {
-        textAlign: 'center',
-        marginTop: 20,
-        fontSize: 16,
-        color: '#fff',
-    },
-    darkItem: {
-        backgroundColor: '#444',
-    },
-    lightItem: {
-        backgroundColor: '#fff',
+        color: '#333',
     },
 });
+
+export default FeedbackScreen;

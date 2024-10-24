@@ -1,38 +1,58 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, ActivityIndicator, Picker, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
+import { ThemeContext } from '../ThemeContext'; 
+import * as ImagePicker from 'expo-image-picker';
 
 const AddBookScreen = ({ navigation }) => {
-  const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
+  const { isDarkTheme } = useContext(ThemeContext);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false); // Estado para controlar carregamento
+  const [loading, setLoading] = useState(false);
+  const [category, setCategory] = useState('Ficção'); // Categoria de livros
+  const [image, setImage] = useState(null); // Estado para imagem de capa
 
-  // Função para adicionar o livro
   const handleAddBook = async () => {
     if (!title || !author) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return;
     }
 
-    const newBook = { id: Date.now().toString(), title, author, description };
+    const storedBooks = await AsyncStorage.getItem('books');
+    const books = storedBooks ? JSON.parse(storedBooks) : [];
 
-    setLoading(true); // Exibir indicador de carregamento
+    const isDuplicate = books.some(b => b.title === title);
+    if (isDuplicate) {
+      Alert.alert('Erro', 'Já existe um livro com este título.');
+      return;
+    }
+
+    const newBook = { id: Date.now().toString(), title, author, description, category, image };
+    setLoading(true);
 
     try {
-      const storedBooks = await AsyncStorage.getItem('books');
-      const books = storedBooks ? JSON.parse(storedBooks) : [];
       books.push(newBook);
-
-      await AsyncStorage.setItem('books', JSON.stringify(books)); // Salvar no armazenamento local
+      await AsyncStorage.setItem('books', JSON.stringify(books)); 
       Alert.alert('Sucesso', 'Livro adicionado com sucesso!');
-      navigation.goBack(); // Voltar à tela anterior após salvar
+      navigation.goBack(); 
     } catch (error) {
       Alert.alert('Erro', 'Erro ao adicionar o livro.');
     } finally {
-      setLoading(false); // Parar o carregamento
+      setLoading(false);
+    }
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      setImage(result.uri);
     }
   };
 
@@ -59,9 +79,27 @@ const AddBookScreen = ({ navigation }) => {
         onChangeText={setDescription}
         placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
       />
-      
+
+      {/* Picker de Categoria */}
+      <Picker
+        selectedValue={category}
+        onValueChange={(itemValue) => setCategory(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Ficção" value="Ficção" />
+        <Picker.Item label="Não-Ficção" value="Não-Ficção" />
+        <Picker.Item label="Ciência" value="Ciência" />
+        <Picker.Item label="História" value="História" />
+      </Picker>
+
+      {/* Upload de imagem */}
+      <TouchableOpacity onPress={pickImage}>
+        <Text>Selecionar Imagem</Text>
+      </TouchableOpacity>
+      {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+
       {loading ? (
-        <ActivityIndicator size="large" color="#ff4081" /> // Indicador de carregamento
+        <ActivityIndicator size="large" color="#ff4081" />
       ) : (
         <Button 
           title="Adicionar Livro" 
@@ -93,6 +131,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 20,
     color: '#000',
+  },
+  picker: {
+    height: 50,
+    marginBottom: 20,
   },
 });
 

@@ -11,6 +11,7 @@ const AudioPlayer = ({ audioFile, audioId }) => {
   const [duration, setDuration] = useState(0);
   const [loading, setLoading] = useState(true);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+  const [isFavorite, setIsFavorite] = useState(false); // Estado para favoritar áudio
 
   useEffect(() => {
     const loadAudio = async () => {
@@ -67,6 +68,22 @@ const AudioPlayer = ({ audioFile, audioId }) => {
     setPlaybackSpeed(playbackSpeed === 1.0 ? 1.5 : 1.0);
   };
 
+  const handleFavorite = async () => {
+    setIsFavorite(!isFavorite);
+    try {
+      const favorites = await AsyncStorage.getItem('favorites');
+      const favoritesArray = favorites ? JSON.parse(favorites) : [];
+      if (!isFavorite) {
+        favoritesArray.push(audioId);
+      } else {
+        const newFavorites = favoritesArray.filter(id => id !== audioId);
+        await AsyncStorage.setItem('favorites', JSON.stringify(newFavorites));
+      }
+    } catch (error) {
+      console.error('Erro ao salvar favorito:', error);
+    }
+  };
+
   const saveProgress = async () => {
     try {
       await AsyncStorage.setItem(`audio_progress_${audioId}`, JSON.stringify(position));
@@ -119,6 +136,10 @@ const AudioPlayer = ({ audioFile, audioId }) => {
           <TouchableOpacity onPress={handleSpeedChange} style={styles.speedButton}>
             <Text style={styles.speedText}>Velocidade: {playbackSpeed}x</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleFavorite} style={styles.favoriteButton}>
+            <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={32} color={isFavorite ? '#ff4081' : '#fff'} />
+          </TouchableOpacity>
         </>
       )}
     </View>
@@ -164,6 +185,10 @@ const styles = StyleSheet.create({
   speedText: {
     color: '#fff',
     fontSize: 16,
+  },
+  favoriteButton: {
+    marginTop: 20,
+    padding: 10,
   },
 });
 

@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
 
 export default function SearchScreen() {
-  const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
-  const [searchQuery, setSearchQuery] = useState(''); // Query de busca
-  const [books, setBooks] = useState([]); // Lista completa de livros
-  const [filteredBooks, setFilteredBooks] = useState([]); // Livros filtrados com base na busca
-  const [loading, setLoading] = useState(true); // Estado para controle de carregamento
+  const { isDarkTheme } = useContext(ThemeContext);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadBooks = async () => {
@@ -21,7 +22,7 @@ export default function SearchScreen() {
         console.error('Erro ao carregar livros:', error);
         Alert.alert('Erro', 'Não foi possível carregar os livros.');
       } finally {
-        setLoading(false); // Finalizar o carregamento
+        setLoading(false);
       }
     };
 
@@ -31,7 +32,7 @@ export default function SearchScreen() {
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query.trim() === '') {
-      setFilteredBooks(books); // Se a pesquisa estiver vazia, mostrar todos os livros
+      setFilteredBooks(books);
       return;
     }
 
@@ -40,6 +41,11 @@ export default function SearchScreen() {
       book.author.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredBooks(filtered);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setFilteredBooks(books);
   };
 
   const renderItem = ({ item }) => (
@@ -51,14 +57,22 @@ export default function SearchScreen() {
 
   return (
     <View style={[styles.container, isDarkTheme ? styles.darkContainer : styles.lightContainer]}>
-      <TextInput
-        style={styles.input}
-        placeholder="Buscar por título ou autor"
-        value={searchQuery}
-        onChangeText={handleSearch}
-        placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
-        accessibilityLabel="Campo de busca para título ou autor"
-      />
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color={isDarkTheme ? "#fff" : "#000"} style={styles.searchIcon} />
+        <TextInput
+          style={styles.input}
+          placeholder="Buscar por título ou autor"
+          value={searchQuery}
+          onChangeText={handleSearch}
+          placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
+          accessibilityLabel="Campo de busca para título ou autor"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+            <Ionicons name="close-circle" size={20} color={isDarkTheme ? "#fff" : "#000"} />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
@@ -89,14 +103,25 @@ const styles = StyleSheet.create({
   darkContainer: {
     backgroundColor: '#333',
   },
-  input: {
-    height: 40,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
-    marginBottom: 20,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 40,
     color: '#000',
+  },
+  clearButton: {
+    marginLeft: 10,
   },
   item: {
     padding: 15,

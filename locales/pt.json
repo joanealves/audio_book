@@ -1,0 +1,23 @@
+{
+    "settings": "Configurações",
+    "dark_mode": "Modo Escuro",
+    "font_size": "Tamanho da Fonte",
+    "small": "Pequena",
+    "medium": "Média",
+    "large": "Grande",
+    "theme_color": "Cor do Tema",
+    "blue": "Azul",
+    "red": "Vermelho",
+    "author": "Autor",
+    "search": "Buscar",
+    "no_books_found": "Nenhum livro encontrado",
+    "language": "Idioma",
+    "notifications": "Notificações",
+    "reset_password": "Redefinir Senha",
+    "library": "Biblioteca",
+    "favorites": "Favoritos",
+    "show_all": "Mostrar Todos",
+    "show_favorites": "Mostrar Favoritos",
+    "no_books_found_in_library": "Nenhum livro encontrado na biblioteca."
+  }
+  

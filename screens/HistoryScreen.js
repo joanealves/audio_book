@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
 
-export default function HistoryScreen() {
+export default function HistoryScreen({ navigation }) {
   const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
   const [history, setHistory] = useState([]); // Estado para o histórico de audiolivros
   const [loading, setLoading] = useState(true); // Estado para controle de carregamento
@@ -24,12 +25,34 @@ export default function HistoryScreen() {
     loadHistory();
   }, []);
 
+  const handleDelete = async (bookId) => {
+    Alert.alert('Confirmar Exclusão', 'Você deseja excluir este item do histórico?', [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Excluir',
+        onPress: async () => {
+          const updatedHistory = history.filter(item => item.id !== bookId);
+          setHistory(updatedHistory);
+          await AsyncStorage.setItem('readingHistory', JSON.stringify(updatedHistory));
+        },
+      },
+    ]);
+  };
+
   const renderItem = ({ item }) => (
     <View style={[styles.item, isDarkTheme ? styles.darkItem : styles.lightItem]}>
-      <Text style={[styles.title, isDarkTheme ? styles.darkText : styles.lightText]}>{item.bookName}</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('HistoryDetail', { item })}>
+        <Text style={[styles.title, isDarkTheme ? styles.darkText : styles.lightText]}>{item.bookName}</Text>
+      </TouchableOpacity>
       <Text style={[styles.date, isDarkTheme ? styles.darkText : styles.lightText]}>
         Ouvido em: {new Date(item.date).toLocaleDateString()}
       </Text>
+      <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+        <Ionicons name="trash-bin-outline" size={24} color={isDarkTheme ? '#ff4081' : '#ff4081'} />
+      </TouchableOpacity>
     </View>
   );
 
@@ -76,14 +99,19 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     borderRadius: 5,
     marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    flex: 1,
   },
   date: {
     fontSize: 14,
     color: '#555',
+    marginRight: 10,
   },
   emptyText: {
     textAlign: 'center',
@@ -101,5 +129,8 @@ const styles = StyleSheet.create({
   },
   lightItem: {
     backgroundColor: '#fff',
+  },
+  deleteButton: {
+    padding: 5,
   },
 });

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
+import { Ionicons } from '@expo/vector-icons'; // Ícones visuais
+import { ThemeContext } from '../ThemeContext';
 
 export default function ReminderScreen() {
-  const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
-  const [reminder, setReminder] = useState(''); // Estado para o lembrete
-  const [reminders, setReminders] = useState([]); // Lista de lembretes
-  const [loading, setLoading] = useState(true); // Estado para controle de carregamento
+  const { isDarkTheme } = useContext(ThemeContext);
+  const [reminder, setReminder] = useState('');
+  const [reminders, setReminders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReminders = async () => {
@@ -18,7 +19,7 @@ export default function ReminderScreen() {
       } catch (error) {
         console.error('Erro ao carregar lembretes:', error);
       } finally {
-        setLoading(false); // Finalizar o carregamento
+        setLoading(false);
       }
     };
 
@@ -26,25 +27,41 @@ export default function ReminderScreen() {
   }, []);
 
   const handleAddReminder = async () => {
-    if (!reminder.trim()) { // Verifica se o lembrete não é vazio
+    if (!reminder.trim()) {
       Alert.alert('Erro', 'Por favor, insira um lembrete.');
       return;
     }
 
-    const newReminders = [...reminders, reminder];
+    const newReminder = { id: Date.now().toString(), text: reminder.trim() };
+    const newReminders = [...reminders, newReminder];
+
     try {
       await AsyncStorage.setItem('reminders', JSON.stringify(newReminders));
       setReminders(newReminders);
-      setReminder(''); // Limpar o campo
+      setReminder('');
       Alert.alert('Sucesso', 'Lembrete adicionado com sucesso!');
     } catch (error) {
       Alert.alert('Erro', 'Erro ao adicionar lembrete.');
     }
   };
 
+  const handleDeleteReminder = async (id) => {
+    const updatedReminders = reminders.filter((item) => item.id !== id);
+    try {
+      await AsyncStorage.setItem('reminders', JSON.stringify(updatedReminders));
+      setReminders(updatedReminders);
+      Alert.alert('Sucesso', 'Lembrete removido.');
+    } catch (error) {
+      Alert.alert('Erro', 'Erro ao remover lembrete.');
+    }
+  };
+
   const renderItem = ({ item }) => (
     <View style={[styles.item, isDarkTheme ? styles.darkItem : styles.lightItem]}>
-      <Text style={[styles.reminderText, isDarkTheme ? styles.darkText : styles.lightText]}>{item}</Text>
+      <Text style={[styles.reminderText, isDarkTheme ? styles.darkText : styles.lightText]}>{item.text}</Text>
+      <TouchableOpacity onPress={() => handleDeleteReminder(item.id)}>
+        <Ionicons name="trash" size={24} color={isDarkTheme ? "#ff4081" : "#333"} />
+      </TouchableOpacity>
     </View>
   );
 
@@ -56,16 +73,18 @@ export default function ReminderScreen() {
         placeholder="Digite seu lembrete aqui..."
         value={reminder}
         onChangeText={setReminder}
+        placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
         accessibilityLabel="Campo para inserir lembrete"
       />
       <Button title="Adicionar Lembrete" onPress={handleAddReminder} accessibilityLabel="Adicionar lembrete" />
+      
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
           data={reminders}
           renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item) => item.id}
           ListEmptyComponent={<Text style={[styles.emptyText, isDarkTheme ? styles.darkText : styles.lightText]}>Nenhum lembrete agendado.</Text>}
         />
       )}
@@ -104,6 +123,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     borderRadius: 5,
     marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   reminderText: {
     fontSize: 16,

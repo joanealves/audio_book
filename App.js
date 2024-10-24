@@ -5,6 +5,7 @@ import AppNavigator from './components/navigation/AppNavigator'; // Navegador co
 import LoginScreen from './screens/LoginScreen'; // Tela de login
 import SignupScreen from './screens/SignupScreen'; // Tela de cadastro
 import { ThemeProvider } from './ThemeContext'; // Provedor do tema
+import './i18n'; // Importar a configuração de i18n
 
 const Stack = createStackNavigator();
 

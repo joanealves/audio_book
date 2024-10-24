@@ -1,12 +1,32 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack'; // Importar o Stack Navigator para a tela de áudio
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../../screens/HomeScreen';         
 import LibraryScreen from '../../screens/LibraryScreen';
 import FavoritesScreen from '../../screens/FavoritesScreen';
 import SettingsScreen from '../../screens/SettingsScreen';
+import AudioPlayerScreen from '../../screens/AudioPlayerScreen'; // Importar a nova tela de áudio
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen 
+        name="Home" 
+        component={HomeScreen} 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="AudioPlayer" 
+        component={AudioPlayerScreen} 
+        options={{ title: 'Reprodutor de Áudio' }} 
+      />
+    </Stack.Navigator>
+  );
+}
 
 export default function AppNavigator() {
   return (
@@ -34,7 +54,7 @@ export default function AppNavigator() {
     >
       <Tab.Screen 
         name="Home" 
-        component={HomeScreen} 
+        component={HomeStack} // Substituir por HomeStack para permitir o empilhamento de telas
         options={{ headerShown: false, title: 'Início' }} 
       />
       <Tab.Screen 

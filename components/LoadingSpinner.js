@@ -1,24 +1,24 @@
-import React from 'react';
-import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View } from 'react-native';
+import LoadingSpinner from './components/LoadingSpinner';
 
-export default function LoadingSpinner({ color = "#0000ff", message = "Carregando..." }) {
-    return (
-        <View style={styles.container}>
-            <ActivityIndicator size="large" color={color} accessibilityLabel="Carregando" />
-            <Text style={styles.text}>{message}</Text>
-        </View>
-    );
+export default function SomeScreen() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulando uma chamada assíncrona (ex: API) que leva 3 segundos para carregar
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingSpinner color="#1E90FF" message="Aguarde, estamos carregando os dados..." />;
+  }
+
+  return (
+    <View>
+      <Text>Dados carregados com sucesso!</Text>
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    text: {
-        marginTop: 20,
-        fontSize: 18,
-    },
-});

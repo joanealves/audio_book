@@ -1,27 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, Button, Switch, Alert, ActivityIndicator } from 'react-native';
-import * as Notifications from 'expo-notifications'; // Biblioteca para notificações
-import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
+import React, { useState, useContext } from 'react';
+import { View, Text, Switch, StyleSheet, Button, TouchableOpacity, Alert, Picker } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { ThemeContext } from '../ThemeContext'; // Importando o ThemeContext
 
 export default function NotificationSettingsScreen() {
   const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
   const [notificationsEnabled, setNotificationsEnabled] = useState(false); // Estado para notificações
-  const [loading, setLoading] = useState(true); // Estado para controle de carregamento
-
-  useEffect(() => {
-    const checkNotificationPermissions = async () => {
-      try {
-        const { status } = await Notifications.getPermissionsAsync();
-        setNotificationsEnabled(status === 'granted'); // Verificar se as permissões estão ativas
-      } catch (error) {
-        console.error('Erro ao verificar permissões de notificação:', error);
-      } finally {
-        setLoading(false); // Finalizar o carregamento
-      }
-    };
-
-    checkNotificationPermissions();
-  }, []);
+  const [notificationFrequency, setNotificationFrequency] = useState('daily'); // Estado para frequência de notificação
+  const [silentMode, setSilentMode] = useState(false); // Estado para notificações silenciosas
 
   const toggleNotifications = async () => {
     if (notificationsEnabled) {
@@ -40,41 +26,71 @@ export default function NotificationSettingsScreen() {
   };
 
   const scheduleNotification = async () => {
+    let interval;
+    switch (notificationFrequency) {
+      case 'daily':
+        interval = 24 * 60 * 60; // 24 horas
+        break;
+      case 'weekly':
+        interval = 7 * 24 * 60 * 60; // 7 dias
+        break;
+      case 'monthly':
+        interval = 30 * 24 * 60 * 60; // 30 dias
+        break;
+      default:
+        interval = 60; // Teste com 60 segundos
+    }
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title: "Lembrete de Audiolivro",
         body: "Não se esqueça de ouvir seu audiolivro!",
+        sound: silentMode ? null : 'default', // Definir notificação silenciosa
       },
-      trigger: { seconds: 60 }, // Notificação em 60 segundos para teste
+      trigger: { seconds: interval, repeats: true }, // Notificação recorrente
     });
-    Alert.alert('Notificação Agendada', 'Você receberá um lembrete em 60 segundos.');
+    Alert.alert('Notificação Agendada', `Notificações agendadas para repetirem a cada ${notificationFrequency}.`);
   };
 
   return (
     <View style={[styles.container, isDarkTheme ? styles.darkContainer : styles.lightContainer]}>
       <Text style={[styles.header, isDarkTheme ? styles.darkText : styles.lightText]}>Configurações de Notificações</Text>
-      
-      {loading ? (
-        <ActivityIndicator size="large" color="#ff4081" />
-      ) : (
-        <View style={styles.option}>
-          <Text style={[styles.optionText, isDarkTheme ? styles.darkText : styles.lightText]}>
-            Ativar Notificações
-          </Text>
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={toggleNotifications}
-            accessibilityLabel="Ativar ou desativar notificações"
-          />
-        </View>
-      )}
 
+      {/* Ativar/Desativar Notificações */}
+      <View style={styles.option}>
+        <Text style={[styles.optionText, isDarkTheme ? styles.darkText : styles.lightText]}>Ativar Notificações</Text>
+        <Switch value={notificationsEnabled} onValueChange={toggleNotifications} />
+      </View>
+
+      {/* Configurar Frequência de Notificações */}
       {notificationsEnabled && (
-        <Button 
-          title="Agendar Notificação" 
-          onPress={scheduleNotification} 
-          accessibilityLabel="Agendar uma notificação"
-        />
+        <>
+          <View style={styles.option}>
+            <Text style={[styles.optionText, isDarkTheme ? styles.darkText : styles.lightText]}>Frequência de Notificações</Text>
+            <Picker
+              selectedValue={notificationFrequency}
+              style={styles.picker}
+              onValueChange={(itemValue) => setNotificationFrequency(itemValue)}
+            >
+              <Picker.Item label="Diário" value="daily" />
+              <Picker.Item label="Semanal" value="weekly" />
+              <Picker.Item label="Mensal" value="monthly" />
+            </Picker>
+          </View>
+
+          {/* Modo Silencioso */}
+          <View style={styles.option}>
+            <Text style={[styles.optionText, isDarkTheme ? styles.darkText : styles.lightText]}>Modo Silencioso</Text>
+            <Switch value={silentMode} onValueChange={setSilentMode} />
+          </View>
+
+          {/* Botão para Agendar Notificação */}
+          <Button 
+            title="Agendar Notificação" 
+            onPress={scheduleNotification} 
+            accessibilityLabel="Agendar uma notificação" 
+          />
+        </>
       )}
     </View>
   );
@@ -84,18 +100,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#121212',
   },
   darkContainer: {
     backgroundColor: '#1e1e1e',
+  },
+  lightContainer: {
+    backgroundColor: '#f5f5f5',
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
-    color: '#ff4081',
   },
   option: {
     flexDirection: 'row',
@@ -105,12 +120,15 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 18,
+  },
+  picker: {
+    height: 50,
+    width: 150,
+  },
+  darkText: {
     color: '#fff',
   },
   lightText: {
     color: '#000',
-  },
-  darkText: {
-    color: '#fff',
   },
 });

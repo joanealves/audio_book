@@ -1,28 +1,48 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
-import { ThemeContext } from '../ThemeContext'; // Importar o ThemeContext
+import React, { useState, useContext, useEffect } from 'react';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ThemeContext } from '../ThemeContext';
 
 export default function AdvancedSearchScreen({ books }) {
-  const { isDarkTheme } = useContext(ThemeContext); // Usar o contexto para tema
-  const [title, setTitle] = useState(''); // Estado para título
-  const [author, setAuthor] = useState(''); // Estado para autor
-  const [filteredBooks, setFilteredBooks] = useState(books); // Estado para os livros filtrados
+  const { isDarkTheme, fontSize } = useContext(ThemeContext); 
+  const [title, setTitle] = useState(''); 
+  const [author, setAuthor] = useState(''); 
+  const [category, setCategory] = useState(''); // Novo campo para categoria
+  const [filteredBooks, setFilteredBooks] = useState(books); 
+  const [loading, setLoading] = useState(false); // Indicador de carregamento
+
+  // Função para busca instantânea
+  useEffect(() => {
+    handleSearch();
+  }, [title, author, category]);
 
   const handleSearch = () => {
+    setLoading(true);
     const results = books.filter(book =>
       book.title.toLowerCase().includes(title.toLowerCase()) &&
-      book.author.toLowerCase().includes(author.toLowerCase())
+      book.author.toLowerCase().includes(author.toLowerCase()) &&
+      book.category.toLowerCase().includes(category.toLowerCase()) // Filtra por categoria
     );
     setFilteredBooks(results);
+    setLoading(false);
+  };
+
+  const clearFilters = () => {
+    setTitle('');
+    setAuthor('');
+    setCategory('');
+    setFilteredBooks(books); // Reseta os filtros
   };
 
   const renderItem = ({ item }) => (
     <View style={[styles.item, isDarkTheme ? styles.darkItem : styles.lightItem]}>
-      <Text style={[styles.title, isDarkTheme ? styles.darkText : styles.lightText]}>
+      <Text style={[styles.title, isDarkTheme ? styles.darkText : styles.lightText, fontSize === 'large' ? styles.largeText : fontSize === 'small' ? styles.smallText : null]}>
         {item.title}
       </Text>
       <Text style={[styles.author, isDarkTheme ? styles.darkText : styles.lightText]}>
         Autor: {item.author}
+      </Text>
+      <Text style={[styles.category, isDarkTheme ? styles.darkText : styles.lightText]}>
+        Categoria: {item.category || 'Não informado'}
       </Text>
     </View>
   );
@@ -35,7 +55,6 @@ export default function AdvancedSearchScreen({ books }) {
         placeholder="Título"
         value={title}
         onChangeText={setTitle}
-        accessibilityLabel="Campo para busca por título"
         placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
       />
       <TextInput
@@ -43,21 +62,34 @@ export default function AdvancedSearchScreen({ books }) {
         placeholder="Autor"
         value={author}
         onChangeText={setAuthor}
-        accessibilityLabel="Campo para busca por autor"
         placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
       />
-      <Button title="Buscar" onPress={handleSearch} accessibilityLabel="Iniciar busca avançada" />
-      
-      <FlatList
-        data={filteredBooks}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        ListEmptyComponent={
-          <Text style={[styles.emptyText, isDarkTheme ? styles.darkText : styles.lightText]}>
-            Nenhum livro encontrado.
-          </Text>
-        }
+      <TextInput
+        style={styles.input}
+        placeholder="Categoria"
+        value={category}
+        onChangeText={setCategory}
+        placeholderTextColor={isDarkTheme ? "#aaa" : "#555"}
       />
+      
+      <View style={styles.buttonContainer}>
+        <Button title="Limpar Filtros" onPress={clearFilters} color="#ff4081" />
+      </View>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#ff4081" />
+      ) : (
+        <FlatList
+          data={filteredBooks}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          ListEmptyComponent={
+            <Text style={[styles.emptyText, isDarkTheme ? styles.darkText : styles.lightText]}>
+              Nenhum livro encontrado.
+            </Text>
+          }
+        />
+      )}
     </View>
   );
 }
@@ -88,6 +120,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#000',
   },
+  buttonContainer: {
+    marginBottom: 20,
+  },
   item: {
     padding: 15,
     borderBottomWidth: 1,
@@ -103,21 +138,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
+  category: {
+    fontSize: 12,
+    color: '#888',
+  },
   emptyText: {
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
   },
-  lightText: {
-    color: '#000',
-  },
   darkText: {
     color: '#fff',
+  },
+  lightText: {
+    color: '#000',
   },
   darkItem: {
     backgroundColor: '#444',
   },
   lightItem: {
     backgroundColor: '#fff',
+  },
+  smallText: {
+    fontSize: 14,
+  },
+  largeText: {
+    fontSize: 22,
   },
 });
