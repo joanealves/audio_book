@@ -1,12 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack'; // Importar o Stack Navigator para a tela de áudio
+import { createStackNavigator } from '@react-navigation/stack'; 
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../../screens/HomeScreen';         
 import LibraryScreen from '../../screens/LibraryScreen';
 import FavoritesScreen from '../../screens/FavoritesScreen';
 import SettingsScreen from '../../screens/SettingsScreen';
-import AudioPlayerScreen from '../../screens/AudioPlayerScreen'; // Importar a nova tela de áudio
+import AudioPlayerScreen from '../../screens/AudioPlayerScreen'; 
+import BookDetail from '../../screens/BookDetailScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -61,6 +62,11 @@ export default function AppNavigator() {
         name="Library" 
         component={LibraryScreen} 
         options={{ headerShown: false, title: 'Biblioteca' }} 
+      />
+      <Tab.Screen 
+        name="BookDetail" // Adicione esta linha
+        component={BookDetail} // Certifique-se de que o componente BookDetail está importado
+        options={{ headerShown: true, title: 'Detalhes do Livro' }} // Ajuste conforme necessário
       />
       <Tab.Screen 
         name="Favorites" 

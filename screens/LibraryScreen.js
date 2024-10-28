@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#1e1e1e',
     marginBottom: 10,
+    zIndex: 1,
   },
   bookInfo: {
     flex: 1,

@@ -24,7 +24,7 @@ export default function App() {
             <>
               <Stack.Screen
                 name="Login"
-                options={{ headerShown: false }} // Escondendo o cabeçalho da tela de login
+                options={{ headerShown: false }} 
               >
                 {(props) => <LoginScreen {...props} onLogin={handleLogin} />}
               </Stack.Screen>
